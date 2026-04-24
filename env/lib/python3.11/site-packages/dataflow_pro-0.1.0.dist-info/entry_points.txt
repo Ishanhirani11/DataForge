@@ -1,2 +1,0 @@
-[console_scripts]
-dataflow-pro = dataflow_pro.cli:main
