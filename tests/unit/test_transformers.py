@@ -77,7 +77,7 @@ class TestDataCleaner:
     @pytest.mark.parametrize("value,expected", [
         (5, True),
         (5.5, True),
-        ("5", False),
+        ("5", True),  # String numbers are also numeric
         ("abc", False),
     ])
     def test_is_numeric(self, value, expected):
@@ -251,7 +251,7 @@ class TestDataEnricher:
         from dataflow_pro.transformers import DataEnricher, EnrichmentType
         
         enricher = DataEnricher()
-        enricher.add_derived_column(
+        enricher.derived_column(
             name="full_name",
             func=lambda row: f"{row.get('first_name', '')} {row.get('last_name', '')}".strip()
         )

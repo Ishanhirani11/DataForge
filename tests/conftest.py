@@ -131,14 +131,20 @@ def invalid_data():
 @pytest.fixture(autouse=True)
 def reset_metrics():
     """Reset metrics before each test."""
-    from dataflow_pro.utils.metrics import _global_metrics
+    try:
+        from dataflow_pro.utils.metrics import MetricsCollector
+        MetricsCollector._global_metrics = None
+    except ImportError:
+        pass
     
-    # Reset global metrics
     yield
     
     # Cleanup after test
-    if _global_metrics:
-        _global_metrics.reset()
+    try:
+        from dataflow_pro.utils.metrics import MetricsCollector
+        MetricsCollector._global_metrics = None
+    except ImportError:
+        pass
 
 
 # Configuration for pytest

@@ -188,11 +188,13 @@ class FileExtractor:
                 delimiter=self.config.delimiter,
                 quotechar=self.config.quotechar,
                 escapechar=self.config.escapechar,
-                skiprows=self.config.skip_rows,
             )
             
             for i, row in enumerate(reader):
-                if self.config.max_rows and i >= self.config.max_rows:
+                # Skip rows if configured
+                if self.config.skip_rows and i < self.config.skip_rows:
+                    continue
+                if self.config.max_rows and (i - (self.config.skip_rows or 0)) >= self.config.max_rows:
                     break
                 
                 # Try to cast types

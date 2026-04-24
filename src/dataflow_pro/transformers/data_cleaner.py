@@ -154,6 +154,7 @@ class DataCleaner:
         
         rows_processed = len(data)
         initial_count = len(data)
+        rows_modified = 0
         
         # Start with list of dicts
         cleaned_data = list(data)

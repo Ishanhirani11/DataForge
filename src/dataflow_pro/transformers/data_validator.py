@@ -493,16 +493,13 @@ class DataValidator:
         """
         result = self.validate(data)
         
-        valid_indices = set()
         invalid_indices = set()
         
         for error in result.errors:
             if error.severity == ValidationSeverity.ERROR:
                 invalid_indices.add(error.row)
-            else:
-                valid_indices.add(error.row)
         
-        valid_rows = [row for i, row in enumerate(data) if i in valid_indices]
+        valid_rows = [row for i, row in enumerate(data) if i not in invalid_indices]
         invalid_rows = [row for i, row in enumerate(data) if i in invalid_indices]
         
         return valid_rows, invalid_rows

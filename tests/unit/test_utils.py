@@ -253,9 +253,10 @@ class TestRetryHandler:
     
     def test_retry_handler_failure(self):
         """Test retry handler with persistent failure."""
-        from dataflow_pro.utils import RetryHandler, RetryError
+        from dataflow_pro.utils import RetryHandler, RetryError, RetryConfig
         
-        handler = RetryHandler(max_attempts=3)
+        config = RetryConfig(max_attempts=3)
+        handler = RetryHandler(config)
         
         def always_fails():
             raise ValueError("Always fails")

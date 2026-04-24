@@ -456,7 +456,8 @@ class DataEnricher:
         """Add custom enrichment."""
         if config.func:
             try:
-                return config.func(data)
+                # Apply function to each row
+                return [config.func(row) for row in data]
             except Exception as e:
                 logger.warning(f"Custom enrichment error: {str(e)}")
         
