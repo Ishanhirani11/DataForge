@@ -63,7 +63,7 @@ dataforge/
 ### 1. Clone & Configure
 
 ```bash
-git clone https://github.com/g00562/dataflow-pro.git
+git clone https://github.com/ipatel09/dataflow-pro.git
 cd dataflow-pro
 cp .env.example .env   # edit with your credentials
 ```
