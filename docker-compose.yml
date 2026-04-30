@@ -1,30 +1,29 @@
 version: "3.8"
 
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: dataflow_pro_postgres
+    container_name: dataforge_postgres
     environment:
-      POSTGRES_DB: dataflow_pro
-      POSTGRES_USER: dataflow_pro
-      POSTGRES_PASSWORD: dataflow_pro_pass
+      POSTGRES_DB: dataforge
+      POSTGRES_USER: dataforge
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dataforge_pass}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dataflow_pro"]
+      test: ["CMD-SHELL", "pg_isready -U dataforge"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - dataflow_network
+      - dataforge_network
+    restart: unless-stopped
 
-  # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: dataflow_pro_redis
+    container_name: dataforge_redis
     command: redis-server --appendonly yes
     ports:
       - "6379:6379"
@@ -36,167 +35,35 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - dataflow_network
+      - dataforge_network
+    restart: unless-stopped
 
-  # LocalStack (S3-compatible)
-  localstack:
-    image: localstack/localstack:3
-    container_name: dataflow_pro_localstack
-    environment:
-      SERVICES: s3:4566
-      DEBUG: 1
-      DEFAULT_REGION: us-east-1
-      LAMBDA_EXECUTOR: retry
-      DOCKER_HOST: unix:///var/run/docker.sock
-    ports:
-      - "4566:4566"
-    volumes:
-      - localstack_data:/var/lib/localstack
-      - /var/run/docker.sock:/var/run/docker.sock
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - dataflow_network
-
-  # Apache Airflow Webserver
-  airflow_webserver:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: dataflow_pro_airflow
-    command: airflow webserver
+    container_name: dataforge_app
     environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://dataflow_pro:dataflow_pro_pass@postgres:5432/dataflow_pro
-      AIRFLOW__CORE__FERNET_KEY: ""
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
-      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
-      AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth
-      DATABASE_URL: postgresql://dataflow_pro:dataflow_pro_pass@postgres:5432/dataflow_pro
+      DATABASE_URL: postgresql://dataforge:${DB_PASSWORD:-dataforge_pass}@postgres:5432/dataforge
       REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
-      - ./dags:/opt/airflow/dags
-      - ./tests:/opt/airflow/tests
-    ports:
-      - "8080:8080"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      - ./config:/app/config
+      - ./logs:/app/logs
     networks:
-      - dataflow_network
-
-  # Airflow Scheduler
-  airflow_scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: dataflow_pro_scheduler
-    command: airflow scheduler
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://dataflow_pro:dataflow_pro_pass@postgres:5432/dataflow_pro
-      AIRFLOW__CORE__FERNET_KEY: ""
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql://dataflow_pro:dataflow_pro_pass@postgres:5432/dataflow_pro
-      REDIS_URL: redis://redis:6379/0
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./dags:/opt/airflow/dags
-    networks:
-      - dataflow_network
-
-  # Worker service (custom ETL worker)
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: dataflow_pro_worker
-    command: python -m dataflow_pro.cli worker
-    environment:
-      DATABASE_URL: postgresql://dataflow_pro:dataflow_pro_pass@postgres:5432/dataflow_pro
-      REDIS_URL: redis://redis:6379/0
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
-      S3_BUCKET: dataflow-pro-test
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./data:/data
-    networks:
-      - dataflow_network
-
-  # Flower (Airflow monitoring)
-  flower:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: dataflow_pro_flower
-    command: airflow flower
-    environment:
-      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
-      AIRFLOW__CELERY__RESULT_BACKEND: redis://redis:6379/0
-    ports:
-      - "5555:5555"
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - dataflow_network
-
-  # Prometheus metrics
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: dataflow_pro_prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    networks:
-      - dataflow_network
-
-  # Grafana dashboard
-  grafana:
-    image: grafana/grafana:latest
-    container_name: dataflow_pro_grafana
-    environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
-      GF_INSTALL_PLUGINS: grafana-piechart-panel
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
-    networks:
-      - dataflow_network
+      - dataforge_network
+    restart: unless-stopped
 
 networks:
-  dataflow_network:
+  dataforge_network:
     driver: bridge
 
 volumes:
   postgres_data:
   redis_data:
-  localstack_data:
-  prometheus_data:
-  grafana_data:

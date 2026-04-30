@@ -1,0 +1,31 @@
+# Production Pipeline Configuration Example
+# Copy this file and customize for your use case
+
+pipeline:
+  name: production_pipeline
+  batch_size: 10000
+  parallelism: 4
+
+source:
+  type: database  # or 'file', 'api'
+  # For database source:
+  # query: "SELECT * FROM source_table WHERE updated_at > :last_run"
+  # For file source:
+  # path: "/data/input/*.csv"
+  # format: csv
+
+transform:
+  clean:
+    missing_value_strategy: fill_default
+    remove_duplicates: true
+  validate:
+    required:
+      - id
+      - timestamp
+    # Add your validation rules
+
+target:
+  type: database  # or 'file', 's3', 'cache'
+  # For database target:
+  # table: target_table
+  # strategy: upsert
