@@ -1,0 +1,43 @@
+pipeline:
+  name: ai_job_market_pipeline
+
+source:
+  type: file
+  path: data/AI_Job_Market_Dataset.csv
+  format: csv
+
+transform:
+  clean:
+    missing_value_strategy: fill_default
+    missing_value_default: unknown
+    remove_duplicates: true
+    numeric_columns:
+      - salary
+      - years_experience
+      - job_openings
+
+  validate:
+    required:
+      - job_id
+      - job_title
+      - country
+      - salary
+    ranges:
+      salary:
+        min: 0
+        max: 1000000
+      years_experience:
+        min: 0
+        max: 50
+
+  enrich:
+    label_encode:
+      - company_size
+      - experience_level
+      - education_level
+      - remote_type
+
+target:
+  type: file
+  path: data/output/clean_ai_jobs.json
+  format: json

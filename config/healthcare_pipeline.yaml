@@ -1,0 +1,53 @@
+pipeline:
+  name: healthcare_pipeline
+
+source:
+  type: file
+  path: data/healthcare_dataset.csv
+  format: csv
+
+transform:
+  clean:
+    missing_value_strategy: fill_default
+    missing_value_default: unknown
+    remove_duplicates: true
+    numeric_columns:
+      - Age
+      - Billing Amount
+      - Room Number
+
+  validate:
+    required:
+      - Name
+      - Age
+      - Gender
+      - Blood Type
+      - Medical Condition
+      - Date of Admission
+      - Billing Amount
+    ranges:
+      Age:
+        min: 0
+        max: 120
+      Billing Amount:
+        min: 0
+        max: 1000000
+    patterns:
+      Gender: "^(Male|Female)$"
+      Blood Type: "^(A|B|AB|O)[+-]$"
+      Admission Type: "^(Elective|Emergency|Urgent)$"
+      Test Results: "^(Normal|Abnormal|Inconclusive)$"
+
+  enrich:
+    label_encode:
+      - Gender
+      - Blood Type
+      - Medical Condition
+      - Admission Type
+      - Test Results
+      - Medication
+
+target:
+  type: file
+  path: data/output/clean_healthcare.json
+  format: json

@@ -1,0 +1,72 @@
+pipeline:
+  name: cars_pipeline
+
+source:
+  type: file
+  path: data/cars.csv
+  format: csv
+
+transform:
+
+  clean:
+    missing_value_strategy: fill_default
+    missing_value_default: unknown
+    remove_duplicates: true
+    numeric_columns:
+      - year
+      - mileage
+      - accidents_or_damage_owner
+      - personal_use_only
+      - seller_name                 # one_owner flag (0/1)
+      - driver_rating
+      - price
+
+  validate:
+    required:
+      - manufacturer
+      - model
+      - year
+      - mileage
+      - engine
+      - transmission
+      - drivetrain
+      - fuel_type
+      - mpg
+      - price
+
+    ranges:
+      year:
+        min: 1980
+        max: 2026
+      mileage:
+        min: 0
+        max: 500000
+      price:
+        min: 500
+        max: 300000
+      driver_rating:
+        min: 1
+        max: 5
+      accidents_or_damage_owner:
+        min: 0
+        max: 1
+      personal_use_only:
+        min: 0
+        max: 1
+      seller_name:
+        min: 0
+        max: 1
+
+  enrich:
+    label_encode:
+      - manufacturer
+      - fuel_type
+      - drivetrain
+      - exterior_color
+      - interior_color
+      - transmission
+
+target:
+  type: file
+  path: data/output/clean_cars.csv
+  format: csv
