@@ -1,9 +1,9 @@
 pipeline:
-  name: sample_users_pipeline
+  name: sample_pipeline
 
 source:
   type: file
-  path: data/AI_Job_Market_Dataset.csv.csv
+  path: data/cars.csv
   format: csv
 
 transform:
@@ -12,25 +12,25 @@ transform:
     missing_value_default: unknown
     remove_duplicates: true
     numeric_columns:
-      - age
+      - year
+      - mileage
+      - price
 
   validate:
     required:
-      - id
-      - name
-      - email
-    patterns:
-      email: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+      - manufacturer
+      - model
+      - year
+      - price
     ranges:
-      age:
-        min: 18
-        max: 120
-
-  enrich:
-    label_encode:
-      - country
+      year:
+        min: 1980
+        max: 2026
+      price:
+        min: 500
+        max: 300000
 
 target:
   type: file
-  path: data/output/clean_users.json
-  format: json
+  path: data/output/clean_sample.csv
+  format: csv

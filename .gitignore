@@ -1,10 +1,31 @@
+# Python
 **/__pycache__/
 *.pyc
 *.pyo
 *.egg-info/
+*.egg
+dist/
+build/
+.eggs/
 
+# Virtual environment
+env/
+venv/
+.venv/
+
+# Logs
 logs/*.log
 
+# macOS
 .DS_Store
 
-env/
+# Environment secrets
+.env
+
+# Data outputs (generated files, not source data)
+data/output/
+
+# Large or sensitive data files
+data/*.xlsx
+data/*.xls
+data/sample_*
