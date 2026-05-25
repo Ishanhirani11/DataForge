@@ -1,0 +1,49 @@
+pipeline:
+  name: mundra_mahuva_pipeline
+
+source:
+  type: file
+  path: data/mundra_nov 2025.xlsx
+  format: excel
+  sheet_name: Sheet1
+
+transform:
+  clean:
+    missing_value_strategy: fill_default
+    missing_value_default: unknown
+    remove_duplicates: true
+    numeric_columns:
+      - QUANTITY
+      - UNIT RATE
+      - FOB INV VALUE
+      - FOB IN USD
+
+  validate:
+    required:
+      - EXPORT DATE
+      - HSN CODE
+      - EXPORTER NAME
+      - IMPORTER NAME
+      - IMPORTER COUNTRY
+      - QUANTITY
+      - CURRENCY
+      - UNIT RATE
+      - FOB IN USD
+      - IMPORT PORT
+      - EXPORT PORT
+      - SHIPPING BILLNO
+    # Keep only rows where exporter city is Mahuva (all variants)
+    patterns:
+      EXPORTER CITY: "(?i).*mahuva.*"
+    ranges:
+      QUANTITY:
+        min: 0
+      FOB IN USD:
+        min: 0
+      UNIT RATE:
+        min: 0
+
+target:
+  type: file
+  path: data/output/mundra_mahuva_nov2025.csv
+  format: csv

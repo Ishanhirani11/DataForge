@@ -35,6 +35,8 @@ def run_pipeline(config_path: str) -> Dict[str, Any]:
         raise ValueError("Only file sources are currently supported by the sample runner")
 
     extractor = FileExtractor()
+    if source.get("sheet_name") is not None:
+        extractor.config.sheet_name = source["sheet_name"]
     extracted = extractor.extract(
         source["path"],
         _parse_file_format(source.get("format")),
@@ -45,6 +47,10 @@ def run_pipeline(config_path: str) -> Dict[str, Any]:
     clean_config = _build_cleaning_config(config.get("transform", {}).get("clean", {}))
     cleaned = DataCleaner(clean_config).clean(working_rows)
     working_rows = cleaned.data
+
+    filter_config = config.get("transform", {}).get("filter", {})
+    if filter_config:
+        working_rows = _apply_filter(working_rows, filter_config)
 
     enrich_config = config.get("transform", {}).get("enrich", {})
     if enrich_config:
@@ -91,7 +97,40 @@ def _parse_file_format(raw_format: str | None) -> FileFormat | None:
         return FileFormat.JSONL
     if normalized == "parquet":
         return FileFormat.PARQUET
+    if normalized in ("excel", "xlsx", "xls"):
+        return FileFormat.EXCEL
     return None
+
+
+def _apply_filter(rows: List[Dict[str, Any]], filter_config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Apply OR-based row filtering from YAML filter config.
+
+    Each condition is: {column, operator, value}
+    Supported operators: contains, equals, regex
+    Rows matching ANY condition are kept (OR logic).
+    """
+    import re as _re
+
+    conditions = filter_config.get("or", [])
+    if not conditions:
+        return rows
+
+    def matches(row: Dict[str, Any]) -> bool:
+        for cond in conditions:
+            col = cond.get("column", "")
+            op = cond.get("operator", "contains").lower()
+            val = str(cond.get("value", ""))
+            cell = str(row.get(col, ""))
+            if op == "contains" and val.lower() in cell.lower():
+                return True
+            if op == "equals" and cell.lower() == val.lower():
+                return True
+            if op == "regex" and _re.search(val, cell, _re.IGNORECASE):
+                return True
+        return False
+
+    return [row for row in rows if matches(row)]
 
 
 def _build_cleaning_config(config: Dict[str, Any]) -> CleaningConfig:
