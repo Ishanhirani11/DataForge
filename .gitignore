@@ -1,40 +1,10 @@
-# Environment
-.env
-.env.local
-
-# Python
 **/__pycache__/
 *.pyc
 *.pyo
 *.egg-info/
 
-# Logs
 logs/*.log
 
-# Data files (too large for git)
-data/*.csv
-data/*.json
-data/*.parquet
-data/*.xlsx
-data/output/
-
-# Config overrides (keep only examples)
-# config/*.yaml
-# !config/*.example.yaml
-
-# Build
-build/
-dist/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# System
 .DS_Store
 
-# Tools
-.code-review-graph/
 env/
