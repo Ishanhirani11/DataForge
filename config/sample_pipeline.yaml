@@ -1,9 +1,9 @@
 pipeline:
-  name: sample_pipeline
+  name: sample_users_pipeline
 
 source:
   type: file
-  path: data/cars.csv
+  path: data/sample_users.csv
   format: csv
 
 transform:
@@ -12,25 +12,34 @@ transform:
     missing_value_default: unknown
     remove_duplicates: true
     numeric_columns:
-      - year
-      - mileage
-      - price
+      - age
+      - salary
+
+  filter:
+    or:
+      - column: country
+        operator: equals
+        value: India
+      - column: country
+        operator: equals
+        value: USA
 
   validate:
     required:
-      - manufacturer
-      - model
-      - year
-      - price
+      - id
+      - name
+      - email
+    patterns:
+      email: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
     ranges:
-      year:
-        min: 1980
-        max: 2026
-      price:
-        min: 500
-        max: 300000
+      age:
+        min: 18
+        max: 80
+      salary:
+        min: 0
+        max: 500000
 
 target:
   type: file
-  path: data/output/clean_sample.csv
+  path: data/output/clean_sample_users.csv
   format: csv

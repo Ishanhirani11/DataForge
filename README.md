@@ -1,191 +1,185 @@
 # DataForge 🔧
 
-> Enterprise-grade ETL/ELT pipeline framework for production data workflows.
+> Config-driven ETL pipeline framework — clean, filter, validate and export data using only a YAML file.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://python.org)
-[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)](https://docker.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql)](https://postgresql.org)
-[![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis)](https://redis.io)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ---
 
-## What is DataForge?
-
-DataForge is a production-ready Python framework that automates the full **Extract → Transform → Load** pipeline. It handles messy real-world data — cleaning it, validating it, and loading it into your database, S3, or cache — reliably and at scale.
+## How It Works
 
 ```
-Raw Data  →  Extract  →  Clean  →  Validate  →  Enrich  →  Load  →  Clean Data
-(CSV/DB/API)                                                    (DB/S3/Redis)
+Input File  →  Clean  →  Filter  →  Validate  →  Output File
+(CSV/Excel/JSON)                                  (CSV/JSON)
 ```
+
+No code changes needed. Just create a YAML config and run one command.
 
 ---
 
-## Features
+## Quick Start
 
-| Feature | Description |
-|---|---|
-| **Multi-source extraction** | CSV, JSON, Parquet, Excel, XML, PostgreSQL, MySQL, REST APIs |
-| **Data cleaning** | Missing values, duplicates, outliers, type coercion |
-| **Validation** | Required fields, type checks, regex patterns, range checks |
-| **Enrichment** | Label encoding, normalization, binning, derived columns |
-| **Multi-target loading** | PostgreSQL (upsert), AWS S3 (partitioned), Redis cache |
-| **Data quality** | Custom expectation suites (JSON-based rules) |
-| **Retry logic** | Exponential backoff with jitter for transient failures |
-| **Metrics** | Prometheus-compatible metrics with in-memory fallback |
-| **Config-driven** | Define pipelines in YAML — no code changes needed |
+```bash
+# 1. Clone and install
+git clone https://github.com/ipatel09/data-forge.git
+cd data-forge
+pip install -e .
+
+# 2. Run the sample pipeline
+dataforge run --config config/sample_pipeline.yaml
+```
 
 ---
 
 ## Project Structure
 
 ```
-dataforge/
+data-forge/
+├── config/                          # Your pipeline YAML files
+│   ├── sample_pipeline.yaml         # ← Start here
+│   ├── cars_pipeline.yaml
+│   └── mundra_mahuva_dehydrated_pipeline.yaml
+├── data/
+│   ├── sample_users.csv             # Sample input data
+│   └── output/                      # Generated outputs (gitignored)
 ├── src/dataforge/
-│   ├── extractors/        # CSV, JSON, Parquet, DB, API extractors
-│   ├── transformers/      # Cleaner, Validator, Enricher
-│   ├── loaders/           # PostgreSQL, S3, Redis loaders
-│   ├── data_quality/      # Expectation suite runner
-│   ├── config/            # Pydantic settings (env-based)
-│   ├── utils/             # Logger, metrics, retry handler
-│   ├── pipeline.py        # Main pipeline orchestrator
-│   └── cli.py             # CLI entry point
-├── config/                # Pipeline YAML configs
-├── docker-compose.yml     # PostgreSQL + Redis + App
-├── Dockerfile
-├── deploy.sh
-└── requirements.txt
+│   ├── pipeline.py                  # Core pipeline engine
+│   ├── cli.py                       # CLI entry point
+│   ├── extractors/                  # CSV, Excel, JSON, Parquet readers
+│   ├── transformers/                # Cleaner, Validator, Enricher
+│   └── loaders/                     # PostgreSQL, S3, Redis loaders
+├── requirements.txt
+└── .env.example
 ```
 
 ---
 
-## Quick Start
-
-### 1. Clone & Configure
-
-```bash
-git clone https://github.com/ipatel09/dataflow-pro.git
-cd dataflow-pro
-cp .env.example .env   # edit with your credentials
-```
-
-### 2. Deploy
-
-```bash
-./deploy.sh
-```
-
-### 3. Run a Pipeline
-
-```bash
-# Create your pipeline config
-cp config/pipeline.example.yaml config/my_pipeline.yaml
-
-# Run it
-docker-compose exec app dataforge run --config /app/config/my_pipeline.yaml
-```
-
----
-
-## Pipeline Configuration
-
-Pipelines are defined in YAML — no Python required:
+## Pipeline YAML Reference
 
 ```yaml
 pipeline:
-  name: user_data_pipeline
+  name: my_pipeline
 
 source:
   type: file
-  path: /data/users.csv
+  path: data/sample_users.csv      # supports csv, excel, json, parquet
   format: csv
+  sheet_name: Sheet1               # only for excel
 
 transform:
   clean:
-    missing_value_strategy: fill_default
+    missing_value_strategy: fill_default   # or: drop, fill_mean, fill_median
     missing_value_default: unknown
     remove_duplicates: true
-    numeric_columns: [age]
-  validate:
-    required: [id, name, email]
+    numeric_columns:
+      - age
+      - salary
+
+  filter:                          # keep rows matching ANY condition (OR logic)
+    or:
+      - column: country
+        operator: contains         # contains | equals | regex
+        value: India
+      - column: description
+        operator: contains
+        value: dehydrated onion
+
+  validate:                        # only valid rows go to output
+    required:
+      - id
+      - name
+      - email
     patterns:
       email: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
     ranges:
-      age: {min: 18, max: 120}
+      age:
+        min: 18
+        max: 80
+
+  enrich:
+    label_encode:                  # convert text categories to numbers
+      - country
 
 target:
   type: file
-  path: /data/output/clean_users.json
-  format: json
+  path: data/output/result.csv
+  format: csv                      # csv or json
 ```
+
+---
+
+## Sample Data → Sample Output
+
+**Input** (`data/sample_users.csv`):
+
+| id | name | email | age | country | salary |
+|----|------|-------|-----|---------|--------|
+| 1 | Alice Johnson | alice@example.com | 29 | India | 55000 |
+| 2 | Bob Smith | bob@example.com | 34 | USA | 72000 |
+| 3 | Carol White | *(missing)* | 27 | UK | 48000 |
+| 4 | David Lee | david@example.com | 41 | Canada | 91000 |
+| 5 | Eva Brown | eva@example.com | 22 | Australia | 38000 |
+| 6 | Frank Das | frank@example.com | *(missing)* | India | 61000 |
+| 7 | Grace Kim | grace@example.com | 31 | USA | 83000 |
+| 8 | Henry Ford | henry@example.com | 55 | UK | 105000 |
+| 9 | Iris Patel | iris@example.com | 26 | India | 44000 |
+| 10 | James Roy | james@example.com | 38 | Canada | 77000 |
+
+**Pipeline applied** (`config/sample_pipeline.yaml`):
+- Clean: fill missing values, remove duplicates
+- Filter: keep only India or USA rows
+- Validate: require id, name, email; valid email pattern
+
+**Output** (`data/output/clean_sample_users.csv`):
+
+| id | name | email | age | country | salary |
+|----|------|-------|-----|---------|--------|
+| 1 | Alice Johnson | alice@example.com | 29.0 | India | 55000.0 |
+| 2 | Bob Smith | bob@example.com | 34.0 | USA | 72000.0 |
+| 6 | Frank Das | frank@example.com | unknown | India | 61000.0 |
+| 7 | Grace Kim | grace@example.com | 31.0 | USA | 83000.0 |
+| 9 | Iris Patel | iris@example.com | 26.0 | India | 44000.0 |
+
+5 rows out of 10 — UK, Canada, Australia rows filtered out; Carol White dropped (missing email fails validation).
 
 ---
 
 ## CLI Commands
 
 ```bash
-dataforge run       --config pipeline.yaml        # Run a pipeline
-dataforge validate  --input data.csv              # Validate a file
-dataforge quality   --expectations suite.json     # Check data quality
-dataforge worker                                  # Start worker (health check)
+dataforge run      --config config/my_pipeline.yaml   # Run a pipeline
+dataforge validate --input data/myfile.csv            # Validate a file
+dataforge quality  --expectations suite.json          # Check data quality
 ```
 
 ---
 
-## Architecture
+## Supported Formats
 
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  PostgreSQL  │    │    Redis    │    │     App     │
-│  (port 5432) │    │ (port 6379) │    │  DataForge  │
-└─────────────┘    └─────────────┘    └─────────────┘
-       │                  │                  │
-       └──────────────────┴──────────────────┘
-                    Docker Network
-```
+| Format | Read | Write |
+|--------|------|-------|
+| CSV | ✅ | ✅ |
+| Excel (.xlsx) | ✅ | — |
+| JSON | ✅ | ✅ |
+| Parquet | ✅ | — |
 
 ---
 
-## Environment Variables
-
-| Variable | Description | Default |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string | — |
-| `REDIS_URL` | Redis connection string | — |
-| `ENVIRONMENT` | `development` / `production` | `development` |
-| `LOG_LEVEL` | `DEBUG` / `INFO` / `WARNING` | `INFO` |
-| `AWS_ACCESS_KEY_ID` | AWS key (for S3 loader) | — |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret (for S3 loader) | — |
-
----
-
-## Tech Stack
-
-- **Python 3.11+** — Core language
-- **SQLAlchemy 2.x** — Database ORM & connection pooling
-- **Pydantic v2** — Config validation & settings management
-- **pandas** — Data manipulation
-- **boto3** — AWS S3 integration
-- **redis-py** — Redis cache integration
-- **tenacity** — Retry logic
-- **Docker** — Containerization
-
----
-
-## Operations
+## Environment Setup
 
 ```bash
-# View logs
-docker-compose logs -f app
-
-# Stop services
-docker-compose down
-
-# Backup database
-docker-compose exec postgres pg_dump -U dataforge dataforge > backup.sql
-
-# Restart app
-docker-compose restart app
+cp .env.example .env
+# Edit .env with your database/AWS credentials if using DB or S3 loaders
 ```
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` | Redis connection string |
+| `ENVIRONMENT` | `development` / `production` |
+| `AWS_ACCESS_KEY_ID` | For S3 loader only |
+| `AWS_SECRET_ACCESS_KEY` | For S3 loader only |
 
 ---
 
