@@ -1,0 +1,45 @@
+pipeline:
+  name: sample_users_pipeline
+
+source:
+  type: file
+  path: data/sample_users.csv
+  format: csv
+
+transform:
+  clean:
+    missing_value_strategy: fill_default
+    missing_value_default: unknown
+    remove_duplicates: true
+    numeric_columns:
+      - age
+      - salary
+
+  filter:
+    or:
+      - column: country
+        operator: equals
+        value: India
+      - column: country
+        operator: equals
+        value: USA
+
+  validate:
+    required:
+      - id
+      - name
+      - email
+    patterns:
+      email: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+    ranges:
+      age:
+        min: 18
+        max: 80
+      salary:
+        min: 0
+        max: 500000
+
+target:
+  type: file
+  path: data/output/clean_sample_users.csv
+  format: csv
