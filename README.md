@@ -632,7 +632,7 @@ of this software and associated documentation files...
 **Ishan Hirani**
 - GitHub: [@Ishanhirani11](https://github.com/Ishanhirani11)
 - Repository: [DataForge](https://github.com/Ishanhirani11/DataForge)
-- Email: [your-email@example.com](mailto:your-email@example.com)
+- Email: [hiraniishan17@gmail.com](mailto:hiraniishan17@gmail.com)
 
 ---
 
@@ -651,7 +651,7 @@ Have questions or feedback?
 - 🐛 **Bug Reports** — [Open Issue](https://github.com/Ishanhirani11/DataForge/issues)
 - 💡 **Feature Requests** — [Discussions](https://github.com/Ishanhirani11/DataForge/discussions)
 - ❓ **Questions** — [Q&A Discussion](https://github.com/Ishanhirani11/DataForge/discussions/categories/q-a)
-- 📧 **Email** — [your-email@example.com](mailto:your-email@example.com)
+- 📧 **Email** — [hiraniishan17@gmail.com](mailto:hiraniishan17@gmail.com)
 
 ---
 
