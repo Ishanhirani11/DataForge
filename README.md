@@ -1,28 +1,75 @@
 # DataForge 🔧
 
-> A powerful, config-driven ETL (Extract, Transform, Load) pipeline framework that enables data processing without writing code. Transform, clean, validate, and export data using simple YAML configurations.
+<div align="center">
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+A powerful, **config-driven ETL (Extract, Transform, Load)** pipeline framework that enables data processing without writing code. Transform, clean, validate, and export data using simple YAML configurations.
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green?logo=open-source-initiative)](LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-Ishanhirani11-black?logo=github)](https://github.com/Ishanhirani11/DataForge)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen)](https://github.com/Ishanhirani11/DataForge)
+
+[Features](#-features) • [Quick Start](#-quick-start) • [Examples](#-example-workflows) • [Documentation](#-documentation) • [Contributing](#-contributing)
+
+</div>
+
+---
+
+## Table of Contents
+
+- [Features](#-features)
+- [Why DataForge?](#-why-dataforge)
+- [Quick Start](#-quick-start)
+- [Project Structure](#-project-structure)
+- [Configuration Guide](#-configuration-guide)
+- [CLI Commands](#-cli-commands)
+- [Supported Formats](#-supported-formats)
+- [Example Workflows](#-example-workflows)
+- [Development](#-development)
+- [Troubleshooting](#-troubleshooting)
+- [Best Practices](#-best-practices)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
 ## 🌟 Features
 
+✨ **Core Capabilities:**
 - **Zero-Code Pipelines** — Define entire ETL workflows using YAML configuration files
-- **Multi-Format Support** — Work with CSV, Excel, JSON, and Parquet files
-- **Data Cleaning** — Handle missing values, remove duplicates, normalize data
+- **Multi-Format Support** — Work with CSV, Excel, JSON, and Parquet files seamlessly
+- **Data Cleaning** — Handle missing values, remove duplicates, normalize data automatically
 - **Advanced Filtering** — Filter rows using simple or complex conditions (AND/OR logic)
 - **Data Validation** — Enforce data quality rules with pattern matching and range checks
 - **Data Enrichment** — Label encode categories, enrich datasets with derived fields
 - **Multiple Loaders** — Export to file systems, databases (PostgreSQL), S3, Redis, or cache
 - **CLI Interface** — Easy command-line tools for running pipelines and validating data
 - **Extensible Architecture** — Plugin-based extractors, transformers, and loaders
+- **Error Handling** — Built-in retry logic and comprehensive error reporting
+- **Performance Metrics** — Track pipeline execution time, rows processed, and quality metrics
+- **Logging** — Detailed logs for debugging and auditing data transformations
+
+---
+
+## ❓ Why DataForge?
+
+| Problem | Solution |
+|---------|----------|
+| **Need to write code for simple ETL tasks** | Just write YAML, no Python required |
+| **Manual data cleaning is time-consuming** | Automated cleaning in seconds |
+| **Hard to maintain data pipelines** | Version-controlled YAML configs |
+| **Data quality issues go undetected** | Built-in validation rules |
+| **Integration with multiple data sources** | Support for files, databases, APIs |
+| **Scaling data operations** | Pluggable architecture for custom needs |
 
 ---
 
 ## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.8 or higher
+- pip or conda
 
 ### Installation
 
@@ -30,6 +77,10 @@
 # Clone the repository
 git clone https://github.com/Ishanhirani11/DataForge.git
 cd DataForge
+
+# Create virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install in development mode
 pip install -e .
@@ -41,10 +92,14 @@ pip install -r requirements.txt
 ### Run Your First Pipeline
 
 ```bash
-# Run the sample pipeline
+# 1. Run the sample pipeline
 dataforge run --config config/sample_pipeline.yaml
 
-# Output will be saved to the output/ directory
+# 2. Check the output
+ls -la data/output/
+
+# 3. View the logs
+tail -f dataforge.log
 ```
 
 ---
@@ -53,54 +108,66 @@ dataforge run --config config/sample_pipeline.yaml
 
 ```
 DataForge/
-├── config/                          # Pipeline configuration files
-│   └── sample_pipeline.yaml         # ← Example configuration
+├── config/
+│   └── sample_pipeline.yaml         # ← Start with this example
+├── data/
+│   ├── .gitkeep                     # Placeholder for data directory
+│   └── output/                      # Generated pipeline outputs
 ├── src/dataforge/
+│   ├── __init__.py
 │   ├── cli.py                       # Command-line interface
 │   ├── pipeline.py                  # Core ETL engine
 │   ├── extractors/                  # Data readers
+│   │   ├── __init__.py
 │   │   ├── file_extractor.py       # CSV, Excel, JSON, Parquet
 │   │   ├── database_extractor.py   # PostgreSQL, MySQL
 │   │   └── api_extractor.py        # REST API sources
 │   ├── transformers/                # Data processors
-│   │   ├── data_cleaner.py         # Clean & normalize
-│   │   ├── data_validator.py       # Quality checks
+│   │   ├── __init__.py
+│   │   ├── data_cleaner.py         # Clean & normalize data
+│   │   ├── data_validator.py       # Validate data quality
 │   │   └── data_enricher.py        # Enrich with new fields
 │   ├── loaders/                     # Data writers
+│   │   ├── __init__.py
 │   │   ├── database_loader.py      # PostgreSQL, MySQL
-│   │   ├── s3_loader.py            # AWS S3
+│   │   ├── s3_loader.py            # AWS S3 integration
 │   │   └── cache_loader.py         # Redis cache
 │   ├── data_quality/                # Quality assurance tools
-│   └── utils/                       # Helpers & utilities
-│       ├── logger.py               # Logging
+│   │   └── __init__.py
+│   ├── config/
+│   │   └── __init__.py
+│   └── utils/                       # Helper utilities
+│       ├── __init__.py
+│       ├── logger.py               # Structured logging
 │       ├── metrics.py              # Performance metrics
-│       └── retry_handler.py        # Retry logic
-├── data/                            # Input/output data
-│   └── output/                      # Generated outputs
-├── logs/                            # Application logs
-├── tests/                           # Unit tests
-├── .env.example                     # Environment template
+│       └── retry_handler.py        # Retry logic with backoff
+├── .env.example                     # Environment variables template
+├── .gitignore                       # Git ignore rules
+├── LICENSE                          # MIT License
+├── README.md                        # This file
 ├── requirements.txt                 # Python dependencies
-├── setup.py                         # Package setup
-└── LICENSE                          # MIT License
+└── setup.py                         # Package configuration
 ```
 
 ---
 
 ## 📋 Configuration Guide
 
-Create a YAML file in the `config/` directory with the following structure:
+### Basic Structure
+
+Create a YAML file in the `config/` directory:
 
 ```yaml
 pipeline:
-  name: my_data_pipeline
+  name: my_pipeline
   description: Process customer data
+  timeout: 3600  # seconds
 
 source:
   type: file                          # file | database | api
   path: data/customers.csv
   format: csv                         # csv | excel | json | parquet
-  sheet_name: Sheet1                  # (Excel only)
+  sheet_name: Sheet1                  # Excel only
 
 transform:
   clean:
@@ -111,24 +178,21 @@ transform:
       - age
       - salary
 
-  filter:                             # Keep rows matching conditions
-    or:                               # OR logic (match any condition)
+  filter:
+    or:                               # Match ANY condition
       - column: country
-        operator: equals              # equals | contains | regex | gt | lt
+        operator: equals
         value: India
       - column: status
         operator: equals
         value: Active
 
-  validate:                           # Data quality rules
-    required:                         # Required columns
-      - id
-      - email
-      - name
-    patterns:                         # Regex patterns
+  validate:
+    required: [id, email, name]       # Required columns
+    patterns:
       email: "^[\\w\\.-]+@[\\w\\.-]+\\.\\w+$"
       phone: "^\\d{10}$"
-    ranges:                           # Numeric ranges
+    ranges:
       age:
         min: 18
         max: 100
@@ -136,16 +200,36 @@ transform:
         min: 0
         max: 1000000
 
-  enrich:                             # Add/transform columns
-    label_encode:                     # Convert categories to numbers
+  enrich:
+    label_encode:
       - country
       - department
 
 target:
   type: file                          # file | database | s3
-  path: output/processed_customers.csv
+  path: data/output/processed.csv
   format: csv                         # csv | json
 ```
+
+### Configuration Options
+
+**Source Types:**
+- `file` — Local CSV, Excel, JSON, Parquet files
+- `database` — PostgreSQL, MySQL, SQLite connections
+- `api` — REST API endpoints with pagination support
+
+**Transform Operators:**
+- `equals` — Exact match comparison
+- `contains` — Substring match
+- `regex` — Regular expression matching
+- `gt` / `gte` — Greater than / Greater or equal
+- `lt` / `lte` — Less than / Less or equal
+
+**Target Types:**
+- `file` — Local filesystem (CSV, JSON)
+- `database` — PostgreSQL, MySQL, SQLite
+- `s3` — AWS S3 bucket
+- `redis` — Redis cache
 
 ---
 
@@ -154,34 +238,39 @@ target:
 ```bash
 # Run a pipeline
 dataforge run --config config/sample_pipeline.yaml
+dataforge run --config config/my_pipeline.yaml --verbose
 
-# Validate a data file
+# Validate data without transforming
 dataforge validate --input data/customers.csv --format csv
 
-# Check data quality
-dataforge quality --input data/customers.csv
+# Check data quality metrics
+dataforge quality --input data/customers.csv --format csv
 
-# Show pipeline status
+# Show pipeline execution status
 dataforge status --config config/sample_pipeline.yaml
 
-# Generate sample data
-dataforge sample --output data/sample.csv --rows 100
+# Generate sample data for testing
+dataforge sample --output data/sample.csv --rows 1000 --format csv
+
+# List available pipelines
+dataforge list
 ```
 
 ---
 
 ## 📊 Supported Formats
 
-| Format | Extract | Load | Notes |
-|--------|---------|------|-------|
-| **CSV** | ✅ | ✅ | Fast, universal format |
-| **Excel (.xlsx)** | ✅ | ❌ | Multi-sheet support |
-| **JSON** | ✅ | ✅ | Nested structures supported |
-| **Parquet** | ✅ | ❌ | Columnar, compressed |
-| **PostgreSQL** | ✅ | ✅ | Connection pooling |
-| **MySQL** | ✅ | ✅ | Full compatibility |
-| **S3** | ❌ | ✅ | AWS integration |
-| **Redis** | ❌ | ✅ | Caching & sessions |
+| Format | Extract | Load | Encoding | Notes |
+|--------|---------|------|----------|-------|
+| **CSV** | ✅ | ✅ | UTF-8, ASCII | Fast, universal format |
+| **Excel (.xlsx)** | ✅ | ❌ | — | Multi-sheet support |
+| **JSON** | ✅ | ✅ | UTF-8 | Nested structures supported |
+| **Parquet** | ✅ | ❌ | — | Columnar, compressed, fast |
+| **PostgreSQL** | ✅ | ✅ | — | Connection pooling, SSL |
+| **MySQL** | ✅ | ✅ | — | Full compatibility |
+| **SQLite** | ✅ | ✅ | — | Local database |
+| **S3** | ❌ | ✅ | — | AWS integration, partitioning |
+| **Redis** | ❌ | ✅ | — | In-memory caching |
 
 ---
 
@@ -195,35 +284,40 @@ cp .env.example .env
 nano .env
 ```
 
-**Environment Variables:**
+**Required Environment Variables:**
 
 ```env
-# Database
+# Database Connections
 DATABASE_URL=postgresql://user:password@localhost:5432/dataforge
 MYSQL_URL=mysql://user:password@localhost:3306/dataforge
+SQLITE_PATH=./data/database.db
 
-# Cache & Session
+# Cache & Session Storage
 REDIS_URL=redis://localhost:6379/0
 
-# AWS (S3 loader only)
+# AWS Credentials (S3 loader only)
 AWS_ACCESS_KEY_ID=your_access_key
 AWS_SECRET_ACCESS_KEY=your_secret_key
 AWS_REGION=us-east-1
 
-# Application
+# Application Settings
 ENVIRONMENT=development          # development | production
 LOG_LEVEL=INFO                   # DEBUG | INFO | WARNING | ERROR
+LOG_FILE=dataforge.log
 ```
 
 ---
 
 ## 📝 Example Workflows
 
-### 1. Clean Customer Data
+### Example 1: Clean Customer Data
+
+**Scenario:** You have raw customer data with missing values and duplicates.
 
 ```yaml
 pipeline:
   name: clean_customers
+  description: Clean raw customer dataset
 
 source:
   type: file
@@ -239,15 +333,23 @@ transform:
 
 target:
   type: file
-  path: output/clean_customers.csv
+  path: data/output/clean_customers.csv
   format: csv
 ```
 
-### 2. Filter & Validate Sales Data
+**Run it:**
+```bash
+dataforge run --config config/clean_customers.yaml
+```
+
+### Example 2: Filter & Validate Sales Data
+
+**Scenario:** Process sales data, filter by region and validate amounts.
 
 ```yaml
 pipeline:
   name: validate_sales
+  description: Filter high-value sales and validate
 
 source:
   type: file
@@ -265,7 +367,9 @@ transform:
         value: "APAC"
   
   validate:
-    required: [order_id, customer_id, amount]
+    required: [order_id, customer_id, amount, date]
+    patterns:
+      order_id: "^ORD[0-9]{6}$"
     ranges:
       amount:
         min: 0
@@ -273,7 +377,54 @@ transform:
 
 target:
   type: file
-  path: output/valid_sales.csv
+  path: data/output/valid_sales.csv
+  format: csv
+```
+
+### Example 3: Multi-stage Pipeline with Enrichment
+
+```yaml
+pipeline:
+  name: enrich_user_data
+  description: Enrich user data with encoding
+
+source:
+  type: file
+  path: data/users.csv
+  format: csv
+
+transform:
+  clean:
+    missing_value_strategy: fill_mean
+    numeric_columns: [age, tenure]
+  
+  filter:
+    or:
+      - column: country
+        operator: contains
+        value: "India"
+      - column: status
+        operator: equals
+        value: "active"
+  
+  validate:
+    required: [user_id, email, country]
+    patterns:
+      email: "^[\\w\\.-]+@[\\w\\.-]+\\.[a-z]{2,}$"
+    ranges:
+      age:
+        min: 18
+        max: 100
+  
+  enrich:
+    label_encode:
+      - country
+      - region
+      - subscription_type
+
+target:
+  type: file
+  path: data/output/enriched_users.csv
   format: csv
 ```
 
@@ -284,18 +435,20 @@ target:
 ### Setup Development Environment
 
 ```bash
+# Clone and navigate
+git clone https://github.com/Ishanhirani11/DataForge.git
+cd DataForge
+
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# Install in development mode with dev dependencies
+pip install -e ".[dev]"
 pip install -r requirements.txt
 
-# Run tests
-python -m pytest tests/
-
-# Check code quality
-pylint src/dataforge/
+# Install pre-commit hooks (optional)
+pre-commit install
 ```
 
 ### Running Tests
@@ -304,33 +457,158 @@ pylint src/dataforge/
 # Run all tests
 pytest
 
+# Run with verbose output
+pytest -v
+
 # Run specific test file
 pytest tests/test_pipeline.py
 
-# Run with coverage
-pytest --cov=src/dataforge tests/
+# Generate coverage report
+pytest --cov=src/dataforge --cov-report=html tests/
+```
+
+### Code Quality
+
+```bash
+# Format code
+black src/ tests/
+
+# Lint code
+pylint src/dataforge/
+flake8 src/
+
+# Type checking
+mypy src/dataforge/
 ```
 
 ---
 
-## 📚 Documentation
+## 🔍 Troubleshooting
 
-- [Configuration Reference](docs/CONFIG.md) — Detailed YAML configuration options
-- [API Reference](docs/API.md) — Python API documentation
-- [Troubleshooting](docs/TROUBLESHOOTING.md) — Common issues and solutions
-- [Contributing Guide](CONTRIBUTING.md) — How to contribute
+### Common Issues
+
+**1. Module not found error**
+```bash
+# Solution: Reinstall in editable mode
+pip install -e .
+```
+
+**2. Permission denied when running CLI**
+```bash
+# Solution: Add execute permission
+chmod +x dataforge
+```
+
+**3. Database connection failed**
+```bash
+# Solution: Check DATABASE_URL in .env
+# Format: postgresql://user:password@host:port/database
+env | grep DATABASE_URL
+```
+
+**4. Data validation failed with no clear error**
+```bash
+# Solution: Run with verbose logging
+dataforge run --config config/my_pipeline.yaml --verbose
+```
+
+**5. Memory error on large files**
+```bash
+# Solution: Process in chunks (update your pipeline config)
+# Use batch processing for files > 1GB
+```
+
+**6. Encoding issues with special characters**
+```bash
+# Solution: Specify encoding in config
+source:
+  type: file
+  encoding: utf-8  # or iso-8859-1, cp1252
+```
+
+### Getting Help
+
+1. **Check logs:** `tail -f dataforge.log`
+2. **Enable debug mode:** Set `LOG_LEVEL=DEBUG` in `.env`
+3. **Validate config:** `dataforge validate --config config/my_pipeline.yaml`
+4. **Open an issue:** [GitHub Issues](https://github.com/Ishanhirani11/DataForge/issues)
+
+---
+
+## 💡 Best Practices
+
+### 1. Configuration Management
+```yaml
+# ✅ Good: Parameterized paths
+source:
+  path: ${INPUT_DIR}/data.csv
+
+# ❌ Bad: Hardcoded paths
+source:
+  path: /home/user/Documents/data.csv
+```
+
+### 2. Data Validation
+```yaml
+# ✅ Always validate required fields
+validate:
+  required: [id, email, name]  # Catch bad data early
+```
+
+### 3. Error Handling
+```yaml
+# ✅ Use try-catch in enrichment
+enrich:
+  label_encode: [country]
+  on_error: skip  # or: fail, warn
+```
+
+### 4. Pipeline Organization
+```
+config/
+├── prod/
+│   ├── customers.yaml
+│   └── orders.yaml
+├── staging/
+│   └── customers_test.yaml
+└── dev/
+    └── local_test.yaml
+```
+
+### 5. Logging & Monitoring
+```yaml
+# ✅ Enable detailed logging
+pipeline:
+  log_level: DEBUG
+  log_file: logs/my_pipeline.log
+```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+We welcome contributions! Here's how:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
+3. **Commit** changes (`git commit -m 'Add AmazingFeature'`)
+4. **Push** to branch (`git push origin feature/AmazingFeature`)
+5. **Open** a Pull Request
+
+### Development Guidelines
+- Follow PEP 8 style guide
+- Add tests for new features
+- Update documentation
+- Keep commits atomic and descriptive
+
+---
+
+## 📚 Additional Resources
+
+- **[Configuration Reference](docs/CONFIG.md)** — Detailed YAML options
+- **[API Reference](docs/API.md)** — Python API documentation
+- **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** — Common issues
+- **[Contributing Guide](CONTRIBUTING.md)** — How to contribute
 
 ---
 
@@ -338,30 +616,51 @@ Contributions are welcome! Please:
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
+```
+MIT License
+
+Copyright (c) 2026 Ishan Hirani
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files...
+```
+
 ---
 
-## 👤 Author
+## 👤 Author & Maintainer
 
 **Ishan Hirani**
 - GitHub: [@Ishanhirani11](https://github.com/Ishanhirani11)
 - Repository: [DataForge](https://github.com/Ishanhirani11/DataForge)
+- Email: [your-email@example.com](mailto:your-email@example.com)
 
 ---
 
 ## 🙏 Acknowledgments
 
-- Built with Python 3.8+
-- Inspired by Apache Airflow and dbt
-- Community feedback and contributions
+- Built with ❤️ using Python 3.8+
+- Inspired by [Apache Airflow](https://airflow.apache.org/) and [dbt](https://www.getdbt.com/)
+- Thanks to all [contributors](CONTRIBUTING.md)
 
 ---
 
-## 📮 Support
+## 📮 Support & Feedback
 
-Found a bug? Have a suggestion? 
-- Open an [Issue](https://github.com/Ishanhirani11/DataForge/issues)
-- Start a [Discussion](https://github.com/Ishanhirani11/DataForge/discussions)
+Have questions or feedback?
+
+- 🐛 **Bug Reports** — [Open Issue](https://github.com/Ishanhirani11/DataForge/issues)
+- 💡 **Feature Requests** — [Discussions](https://github.com/Ishanhirani11/DataForge/discussions)
+- ❓ **Questions** — [Q&A Discussion](https://github.com/Ishanhirani11/DataForge/discussions/categories/q-a)
+- 📧 **Email** — [your-email@example.com](mailto:your-email@example.com)
 
 ---
 
-**Happy Data Processing! 🎉**
+<div align="center">
+
+**Made with ❤️ by [Ishan Hirani](https://github.com/Ishanhirani11)**
+
+If this project helped you, please consider giving it a ⭐ on GitHub!
+
+[Back to Top](#dataforge-)
+
+</div>
