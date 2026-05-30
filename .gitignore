@@ -2,30 +2,86 @@
 **/__pycache__/
 *.pyc
 *.pyo
+*.pyd
+*.so
 *.egg-info/
 *.egg
 dist/
 build/
 .eggs/
+*.whl
 
 # Virtual environment
 env/
 venv/
 .venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Testing & Coverage
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
 
 # Logs
-logs/*.log
+logs/
+*.log
+pip-log.txt
+pip-delete-this-directory.txt
 
 # macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+
+# Windows
+Thumbs.db
+ehthumbs.db
 
 # Environment secrets
 .env
+.env.local
+.env.*.local
+
+# Cache
+.cache/
+*.cache
 
 # Data outputs (generated files, not source data)
 data/output/
-
-# Large or sensitive data files
 data/*.xlsx
 data/*.xls
 data/sample_*
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE specific files
+.vscode/launch.json
+.vscode/tasks.json
+.idea/workspace.xml
