@@ -2,11 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name="dataforge",
-    version="1.0.0",
+    version="1.0.1",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[
         "pandas>=2.0.0",
+        "openpyxl>=3.1.0",
         "pyyaml>=6.0",
         "python-dotenv>=1.0.0",
         "requests>=2.31.0",
@@ -19,6 +20,7 @@ setup(
         "tenacity>=8.2.0",
         "python-dateutil>=2.8.0",
         "pytz>=2023.3",
+        "streamlit>=1.45.0",
     ],
     entry_points={
         "console_scripts": [
