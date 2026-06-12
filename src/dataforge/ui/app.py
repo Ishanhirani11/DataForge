@@ -236,6 +236,15 @@ if uploaded_file:
     st.divider()
 
     st.subheader("Generated YAML")
+
+    # -----------------------------------------
+    # DETECT SOURCE FORMAT
+    # -----------------------------------------
+    
+    source_format = uploaded_file.name.split(".")[-1].lower()
+    
+    if source_format in ["xlsx", "xls"]:
+        source_format = "excel"
     
     config = {
 
