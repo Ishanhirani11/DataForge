@@ -84,10 +84,10 @@ class FileConfig:
     # For Parquet
     columns: Optional[List[str]] = None
     filters: Optional[List[tuple]] = None
-    
+
     # For Excel
-   sheet_name: Optional[Union[str, int]] = 0
-    
+    sheet_name: Optional[Union[str, int]] = 0
+
     # For fixed width
     colspecs: Optional[List[tuple]] = None
 
