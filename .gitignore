@@ -85,3 +85,5 @@ data/sample_*
 .vscode/launch.json
 .vscode/tasks.json
 .idea/workspace.xml
+
+.streamlit/secrets.toml
