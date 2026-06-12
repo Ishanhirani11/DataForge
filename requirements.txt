@@ -27,3 +27,5 @@ pytz>=2023.3
 
 # UI
 streamlit>=1.45.0
+
+-e .
