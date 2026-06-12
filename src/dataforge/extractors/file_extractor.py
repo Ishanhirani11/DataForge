@@ -86,7 +86,7 @@ class FileConfig:
     filters: Optional[List[tuple]] = None
     
     # For Excel
-    sheet_name: Optional[Union[str, int]] = None
+   sheet_name: Optional[Union[str, int]] = 0
     
     # For fixed width
     colspecs: Optional[List[tuple]] = None
@@ -261,17 +261,22 @@ class FileExtractor:
         return df.to_dict(orient="records")
     
     def _read_excel(self, file_path: str) -> List[Dict[str, Any]]:
-        """Read Excel file."""
+    """Read Excel file."""
         if not PANDAS_AVAILABLE:
             raise ImportError("pandas is required for Excel support")
-        
+    
         df = pd.read_excel(
             file_path,
             sheet_name=self.config.sheet_name,
             usecols=self.config.usecols,
             nrows=self.config.max_rows,
         )
-        
+    
+        # If multiple sheets are returned, use the first one
+        if isinstance(df, dict):
+            first_sheet = next(iter(df))
+            df = df[first_sheet]
+    
         return df.to_dict(orient="records")
     
     def _read_xml(self, file_path: str) -> List[Dict[str, Any]]:
