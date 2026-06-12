@@ -340,10 +340,14 @@ if uploaded_file:
 
         except Exception as e:
 
-            st.error(
-                f"Pipeline failed: {str(e)}"
+            import traceback
+        
+            st.error(str(e))
+        
+            st.code(
+                traceback.format_exc()
             )
-
+        
             st.stop()
 
         st.success("Pipeline executed successfully!")
