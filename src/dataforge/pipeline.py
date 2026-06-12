@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import csv
 import json
+import pandas as pd
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -179,24 +180,88 @@ def _build_validator(config: Dict[str, Any]) -> DataValidator:
 
 
 def _write_output(rows: List[Dict[str, Any]], target: Dict[str, Any]) -> str:
+
     if target.get("type") != "file":
-        raise ValueError("Only file targets are currently supported by the sample runner")
+        raise ValueError(
+            "Only file targets are currently supported by the sample runner"
+        )
 
     destination = Path(target["path"])
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    output_format = str(target.get("format", "json")).lower()
+
+    destination.parent.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    output_format = str(
+        target.get(
+            "format",
+            "json"
+        )
+    ).lower()
+
+    df = pd.DataFrame(rows)
+
+    # ----------------------------------------
+    # CSV
+    # ----------------------------------------
 
     if output_format == "csv":
-        fieldnames = list(rows[0].keys()) if rows else []
-        with destination.open("w", encoding="utf-8", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(rows)
+
+        df.to_csv(
+            destination,
+            index=False
+        )
+
         return str(destination)
 
-    with destination.open("w", encoding="utf-8") as handle:
-        json.dump(rows, handle, indent=2, default=str)
-    return str(destination)
+    # ----------------------------------------
+    # JSON
+    # ----------------------------------------
 
+    elif output_format == "json":
+
+        df.to_json(
+            destination,
+            orient="records",
+            indent=2
+        )
+
+        return str(destination)
+
+    # ----------------------------------------
+    # XLSX
+    # ----------------------------------------
+
+    elif output_format == "xlsx":
+
+        df.to_excel(
+            destination,
+            index=False
+        )
+
+        return str(destination)
+
+    # ----------------------------------------
+    # XLS
+    # ----------------------------------------
+
+    elif output_format == "xls":
+
+        df.to_excel(
+            destination,
+            index=False,
+            engine="xlwt"
+        )
+
+        return str(destination)
+
+    # ----------------------------------------
+    # Unsupported format
+    # ----------------------------------------
+
+    raise ValueError(
+        f"Unsupported output format: {output_format}"
+    )
 
 __all__ = ["load_pipeline_config", "run_pipeline"]
