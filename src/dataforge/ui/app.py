@@ -28,7 +28,7 @@ st.divider()
 
 uploaded_file = st.file_uploader(
     "Upload Dataset",
-    type=["csv", "xlsx"]
+    type=["csv", "xlsx", "xls", "json"]
 )
 
 if uploaded_file:
@@ -44,12 +44,25 @@ if uploaded_file:
 
     with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
+        
 
     if uploaded_file.name.endswith(".csv"):
+
         df = pd.read_csv(uploaded_file)
 
-    else:
+    elif uploaded_file.name.endswith((".xlsx", ".xls")):
+    
         df = pd.read_excel(uploaded_file)
+    
+    elif uploaded_file.name.endswith(".json"):
+    
+        df = pd.read_json(uploaded_file)
+    
+    else:
+    
+        st.error("Unsupported file format")
+
+        st.stop()
 
     st.success("Dataset uploaded successfully!")
 
@@ -211,7 +224,8 @@ if uploaded_file:
         [
             "csv",
             "json",
-            "postgres"
+            "xlsx",
+            "xls"
         ]
     )
 
@@ -226,14 +240,14 @@ if uploaded_file:
     config = {
 
         "source": {
-
-            "type": "file",
-
-            "path": file_path,
-
-            "format": "csv"
-
-        },
+    
+        "type": "file",
+    
+        "path": file_path,
+    
+        "format": source_format
+    
+    },
 
         "transform": {
 
@@ -259,9 +273,9 @@ if uploaded_file:
 
             "type": "file",
 
-            "path": "data/output/cleaned_data.csv",
+            "path": f"data/output/cleaned_data.{output_type}",
 
-            "format": "csv"
+            "format": output_type
 
         }
 
@@ -351,9 +365,20 @@ if uploaded_file:
             st.subheader("Cleaned Dataset")
 
             if output_path.endswith(".csv"):
+
                 output_df = pd.read_csv(output_path)
-            else:
+            
+            elif output_path.endswith(".json"):
+            
                 output_df = pd.read_json(output_path)
+            
+            elif output_path.endswith((".xlsx", ".xls")):
+            
+                output_df = pd.read_excel(output_path)
+            
+            else:
+            
+                output_df = pd.read_csv(output_path)
 
             st.dataframe(
                 output_df.head(),
